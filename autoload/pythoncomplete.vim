@@ -123,16 +123,20 @@ def vimcomplete(context,match):
         import vim
         cmpl = Completer()
         cmpl.evalsource('\n'.join(vim.current.buffer),vim.eval("line('.')"))
+
         all = cmpl.get_completions(context,match)
-        all.sort(complsort)
 
         icmpl = ImportCompleter()
-        all += icmpl.get_completions(vim.current.line)
+        iall = icmpl.get_completions(vim.current.line)
+        if len(iall) > 0:
+            all = iall
+        else:
+            scmpl = SuperCompleter()
+            sall = scmpl.get_completions(vim.current.line)
+            if len(sall) > 0:
+                all = sall
 
-        scmpl = SuperCompleter()
-        all += scmpl.get_completions(vim.current.line)
-
-        dbg("All: %s " % all)
+        all.sort(complsort)
 
         dictstr = '['
         # have to do this for double quoting
@@ -331,8 +335,8 @@ class ImportCompleter(CompletionModule):
         match = re.compile(r'^\s*from\s+([\w\.]+)\s+import\s+(.*)$').match(text)
 
         if match:
-            dbg("from match")
-            self.mod = __import__(match.groups()[0])
+            dbg("from match __import__('%s') " % match.groups()[0] )
+            self.mod = import_and_get_mod(match.groups()[0])
             ims = [m.strip() for m in match.groups()[1].split(',')]
             lead = ims.pop()
             dbg("lead '%s'" % lead)
@@ -776,6 +780,27 @@ def _sanitize(str):
     return val
 
 sys.path.extend(['.','..'])
+
+def import_and_get_mod(str, parent_mod=None):
+    """Attempts to import the supplied string as a module.
+    Returns the module that was imported."""
+    mods = str.split('.')
+    child_mod_str = '.'.join(mods[1:])
+    if parent_mod is None:
+        if len(mods) > 1:
+            #First time this function is called; import the module
+            #__import__() will only return the top level module
+            return import_and_get_mod(child_mod_str, __import__(str))
+        else:
+            return __import__(str)
+    else:
+        mod = getattr(parent_mod, mods[0])
+        if len(mods) > 1:
+            #We're not yet at the intended module; drill down
+            return import_and_get_mod(child_mod_str, mod)
+        else:
+            return mod
+
 PYTHONEOF
 endfunction
 
