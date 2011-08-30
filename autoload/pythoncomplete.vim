@@ -313,7 +313,11 @@ class ImportCompleter(CompletionModule):
             matches = []
             dbg('possible root module complete')
             subword = match.groups()[1].strip()
-            self.mods = [m for m in sys.modules.keys() if m.find(subword) == 0]
+            self.mods = [m for m in sys.modules.keys() \
+                if m.find(subword) == 0]
+            #This is just to clear submodules as there are too many results
+            if not '.' in subword:
+                self.mods = [m for m in self.mods if '.' not in m]
 
             dbg('mods %s' % self.mods)
             for mod in self.mods:
@@ -336,15 +340,18 @@ class ImportCompleter(CompletionModule):
 
         if match:
             dbg("from match __import__('%s') " % match.groups()[0] )
-            self.mod = import_and_get_mod(match.groups()[0])
+            try:
+                self.mod = import_and_get_mod(match.groups()[0])
+            except:
+                return []
+
             ims = [m.strip() for m in match.groups()[1].split(',')]
             lead = ims.pop()
-            dbg("lead '%s'" % lead)
-            dbg("mod '%s'" % self.mod)
 
             matches = []
 
-            self.atts = [a for a in dir(self.mod) if a.find(lead) == 0 and a not in ims]
+            self.atts = [a for a in dir(self.mod) \
+                if a.find(lead) == 0 and a not in ims]
 
             for att in self.atts:
                 try:
