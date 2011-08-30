@@ -126,13 +126,11 @@ def vimcomplete(context,match):
         all = cmpl.get_completions(context,match)
         all.sort(complsort)
 
-        if len(all) == 0:
-            icmpl = ImportCompleter()
-            all = icmpl.get_completions(vim.current.line)
+        icmpl = ImportCompleter()
+        all += icmpl.get_completions(vim.current.line)
 
-        if len(all) == 0:
-            scmpl = SuperCompleter()
-            all = scmpl.get_completions(vim.current.line)
+        scmpl = SuperCompleter()
+        all += scmpl.get_completions(vim.current.line)
 
         dbg("All: %s " % all)
 
@@ -409,6 +407,7 @@ class SuperCompleter(CompletionModule):
 
             for m in all:
                 #TODO This is assuming self... need cls
+                dbg("ATTR: %s" % m['abbr'])
                 try:
                     word_list = re.compile(r'\(|\)').split(m['abbr'][len(leader) :])
                     word_list[1] = "(%s)" % ",".join(['self']+ word_list[1].split(','))
@@ -416,8 +415,13 @@ class SuperCompleter(CompletionModule):
                     m['word'] = "".join(word_list) + ":"
                 except:
                     #This fails when it is not a function
-                    # I might reintroduce it
+                    #I might reintroduce it
+                    dbg('Deleting: %s' % m['word'])
                     del m
+                
+
+                #TODO: This is crude. Should be looking for type(o).__name__ = 'instancemethod'
+                all = [a for a in all if '(' in a['abbr']]
 
             all.sort(complsort)
             return all
