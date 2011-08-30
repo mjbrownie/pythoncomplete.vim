@@ -1,0 +1,46 @@
+
+pythoncomplete.vim
+
+This is a fork of the current pythoncomplete omnicomplete function with a few enhancements
+
+http://www.vim.org/scripts/script.php?script_id=1542
+
+http://www.vim.org/scripts/download_script.php?src_id=10872
+
+
+Function completion for Sub Classes
+
+Example
+
+class Foo(object):
+
+    def spondonicle(self,somearg,someotherarg):
+        pass
+
+class SubFoo(Foo):
+
+    def wibble(self,anotherarg,foo=None):
+        pass
+
+    def s<c-x><c-o> <!-- shou;d complete spondonicle here
+
+class SubSubFoo(SubFoo):
+
+    def spondonicle(self,somearg,someotherarg):
+        pass
+
+    def w<c-x><c-o> should show wibble here
+
+
+Sys Path Import completion
+
+from datetime import ti<c-x><c-o> <--- should import timedelta here
+
+
+BUGS: 
+
+This is a work in progress. There needs to be a lot of filtering out of irrelevant arguments.
+
+Some modules will complain on a dir() function
+
+Doc strings need to be filtered
