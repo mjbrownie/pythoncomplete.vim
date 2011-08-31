@@ -421,7 +421,8 @@ class SuperCompleter(CompletionModule):
                 dbg("ATTR: %s" % m['abbr'])
                 try:
                     word_list = re.compile(r'\(|\)').split(m['abbr'][len(leader) :])
-                    word_list[1] = "(%s)" % ",".join(['self']+ word_list[1].split(','))
+                    word_list[1] = "(%s)" % ",".join(['self']+ [
+                        w for w in word_list[1].split(',') if not w == ''])
                     dbg("word_list %s" % word_list)
                     m['word'] = "".join(word_list) + ":"
                 except:
