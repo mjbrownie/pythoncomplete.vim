@@ -343,6 +343,7 @@ class ImportCompleter(CompletionModule):
             try:
                 self.mod = import_and_get_mod(match.groups()[0])
             except:
+                dbg("Failed import_and_get_mod")
                 return []
 
             ims = [m.strip() for m in match.groups()[1].split(',')]
@@ -425,6 +426,10 @@ class SuperCompleter(CompletionModule):
                         w for w in word_list[1].split(',') if not w == ''])
                     dbg("word_list %s" % word_list)
                     m['word'] = "".join(word_list) + ":"
+                    #replace omnicompletes abbrev syntax
+                    m['word'] = m['word'].replace(
+                        '...', '*args').replace(
+                        '***', '**kwargs')
                 except:
                     #This fails when it is not a function
                     #I might reintroduce it
