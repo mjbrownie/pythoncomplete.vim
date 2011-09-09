@@ -40,6 +40,7 @@
 "  It was a bugfix version on top of 0.3.  This is a complete
 "  rewrite.
 "
+let g:pythoncomplete_include_super = 1
 
 if !has('python')
     echo "Error: Required vim compiled with +python"
@@ -393,6 +394,8 @@ class SuperCompleter(CompletionModule):
 
     def get_completions(self,text):
 
+        include_super = vim.eval('g:pythoncomplete_include_super')
+
         match = re.compile(r'\s+def (\w*)$').match(text)
         if match:
             class_line = vim.eval('getline(search("^\s*class " , "bn",0))')
@@ -421,11 +424,24 @@ class SuperCompleter(CompletionModule):
                 #TODO This is assuming self... need cls
                 dbg("ATTR: %s" % m['abbr'])
                 try:
-                    word_list = re.compile(r'\(|\)').split(m['abbr'][len(leader) :])
+                    #TODO this is ugly
+                    word_list = re.compile(r'\(|\)').split(m['abbr'])
+                    func = word_list[0]
+                    word_list[0] = word_list[0][len(leader) :] #get rid of leading text
+                    args = word_list[1]
                     word_list[1] = "(%s)" % ",".join(['self']+ [
                         w for w in word_list[1].split(',') if not w == ''])
                     dbg("word_list %s" % word_list)
                     m['word'] = "".join(word_list) + ":"
+
+                    if include_super:
+                        #TODO Padding hack. I cant seem to get newlines
+                        m['word'] += "                                                                   return super(%s,self).%s(%s)" % (
+                            klass,
+                            func,
+                            re.compile("=[^,]+(,|$)").sub('\\1',args)
+                        )
+
                     #replace omnicompletes abbrev syntax
                     m['word'] = m['word'].replace(
                         '...', '*args').replace(
@@ -435,7 +451,7 @@ class SuperCompleter(CompletionModule):
                     #I might reintroduce it
                     dbg('Deleting: %s' % m['word'])
                     del m
-                
+
 
                 #TODO: This is crude. Should be looking for type(o).__name__ = 'instancemethod'
                 all = [a for a in all if '(' in a['abbr']]
