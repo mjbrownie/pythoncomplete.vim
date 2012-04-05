@@ -40,7 +40,19 @@
 "  It was a bugfix version on top of 0.3.  This is a complete
 "  rewrite.
 "
-let g:pythoncomplete_include_super = 1
+"This is a Hack setting will only work if you have textwidth=80
+"eg in your .vimrc. So far I cant get omnifunc to return multiline completions
+"
+"set textwidth=80
+"let g:pythoncomplete_include_super = 1
+"
+" It will include a formatted super() statement on completing a subclass
+" method.
+"
+"
+if !exists('g:pythoncomplete_include_super')
+    let g:pythoncomplete_include_super = 0
+endif
 
 if !has('python')
     echo "Error: Required vim compiled with +python"
