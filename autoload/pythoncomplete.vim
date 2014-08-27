@@ -101,8 +101,9 @@ endfunction
 
 function! s:DefPython()
 python << PYTHONEOF
-import sys, tokenize, cStringIO, types
+import sys, tokenize, cStringIO, types, re
 from token import NAME, DEDENT, NEWLINE, STRING
+import vim
 
 debugstmts=[]
 def dbg(s): debugstmts.append(s)
@@ -133,7 +134,6 @@ def vimcomplete(context,match):
     global debugstmts
     debugstmts = []
     try:
-        import vim
         cmpl = Completer()
         cmpl.evalsource('\n'.join(vim.current.buffer),vim.eval("line('.')"))
 
